@@ -59,7 +59,7 @@ class LogStash::Runner < Clamp::Command
   option ["-t", "--configtest"], :flag,
     I18n.t("logstash.agent.flag.configtest"),
     :attribute_name => :config_test
-  
+
   attr_reader :agent
 
   def initialize(*args)
@@ -110,29 +110,29 @@ class LogStash::Runner < Clamp::Command
       fail(I18n.t("logstash.agent.missing-configuration"))
     end
 
-    begin
-      @agent.add_pipeline(config_string, filter_workers)
-      if config_test?
-        puts "Configuration OK"
-      else
-        task = Stud::Task.new { @agent.execute }
-        return task.wait
-      end
-    rescue LoadError => e
-      fail("Configuration problem.")
-    rescue LogStash::ConfigurationError => e
-      @logger.error I18n.t("logstash.agent.error", :error => e)
-      if !config_test?
-        @logger.warn I18n.t("logstash.agent.configtest-flag-information")
-      end
-      return 1
-    rescue => e
-      @logger.error I18n.t("oops", :error => e)
-      @logger.debug e.backtrace if $DEBUGLIST.include?("stacktrace")
-    ensure
-      @log_fd.close if @log_fd
+    @agent.add_pipeline(config_string, filter_workers)
+
+    if config_test?
+      puts "Configuration OK"
+    else
+      puts "running task"
+      task = Stud::Task.new { puts "executing!" ; @agent.execute }
+      return task.wait
     end
 
+  rescue LoadError => e
+    fail("Configuration problem.")
+  rescue LogStash::ConfigurationError => e
+    @logger.error I18n.t("logstash.agent.error", :error => e)
+    if !config_test?
+      @logger.warn I18n.t("logstash.agent.configtest-flag-information")
+    end
+    return 1
+  rescue => e
+    @logger.error I18n.t("oops", :error => e)
+    @logger.debug e.backtrace if $DEBUGLIST.include?("stacktrace")
+  ensure
+    @log_fd.close if @log_fd
   end # def self.main
 
   def show_version
@@ -309,5 +309,10 @@ class LogStash::Runner < Clamp::Command
       fail(I18n.t("logstash.agent.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
     end
   end
+
+  # Emit a failure message and abort.
+  def fail(message)
+    raise LogStash::ConfigurationError, message
+  end # def fail
 
 end # class LogStash::Runner
