@@ -45,5 +45,5 @@ end
 if $0 == __FILE__
   LogStash::Bundler.setup!({:without => [:build, :development]})
   require ARGV.shift
-  LogStash::Runner.new.main(ARGV)
+  LogStash::Runner.run("bin/logstash", ARGV)
 end
