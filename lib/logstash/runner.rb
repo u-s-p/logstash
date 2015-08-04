@@ -19,45 +19,45 @@ class LogStash::Runner < Clamp::Command
   DEFAULT_OUTPUT = "output { stdout { codec => rubydebug } }"
 
   option ["-f", "--config"], "CONFIG_PATH",
-    I18n.t("logstash.agent.flag.config"),
+    I18n.t("logstash.runner.flag.config"),
     :attribute_name => :config_path
 
   option "-e", "CONFIG_STRING",
-    I18n.t("logstash.agent.flag.config-string",
+    I18n.t("logstash.runner.flag.config-string",
            :default_input => DEFAULT_INPUT, :default_output => DEFAULT_OUTPUT),
     :default => "", :attribute_name => :config_string
 
   option ["-w", "--filterworkers"], "COUNT",
-    I18n.t("logstash.agent.flag.filterworkers"),
+    I18n.t("logstash.runner.flag.filterworkers"),
     :attribute_name => :filter_workers, :default => 1, &:to_i
 
   option "--watchdog-timeout", "SECONDS",
-    I18n.t("logstash.agent.flag.watchdog-timeout"),
+    I18n.t("logstash.runner.flag.watchdog-timeout"),
     :default => 10, &:to_f
 
   option ["-l", "--log"], "FILE",
-    I18n.t("logstash.agent.flag.log"),
+    I18n.t("logstash.runner.flag.log"),
     :attribute_name => :log_file
 
   # Old support for the '-v' flag'
   option "-v", :flag,
-    I18n.t("logstash.agent.flag.verbosity"),
+    I18n.t("logstash.runner.flag.verbosity"),
     :attribute_name => :verbosity, :multivalued => true
 
-  option "--quiet", :flag, I18n.t("logstash.agent.flag.quiet")
-  option "--verbose", :flag, I18n.t("logstash.agent.flag.verbose")
-  option "--debug", :flag, I18n.t("logstash.agent.flag.debug")
+  option "--quiet", :flag, I18n.t("logstash.runner.flag.quiet")
+  option "--verbose", :flag, I18n.t("logstash.runner.flag.verbose")
+  option "--debug", :flag, I18n.t("logstash.runner.flag.debug")
 
   option ["-V", "--version"], :flag,
-    I18n.t("logstash.agent.flag.version")
+    I18n.t("logstash.runner.flag.version")
 
   option ["-p", "--pluginpath"] , "PATH",
-    I18n.t("logstash.agent.flag.pluginpath"),
+    I18n.t("logstash.runner.flag.pluginpath"),
     :multivalued => true,
     :attribute_name => :plugin_paths
 
   option ["-t", "--configtest"], :flag,
-    I18n.t("logstash.agent.flag.configtest"),
+    I18n.t("logstash.runner.flag.configtest"),
     :attribute_name => :config_test
 
   attr_reader :agent
@@ -107,7 +107,7 @@ class LogStash::Runner < Clamp::Command
     if @config_string || @config_path then
       config_string = format_config @config_path, @config_string
     else
-      fail(I18n.t("logstash.agent.missing-configuration"))
+      fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
     @agent.add_pipeline(config_string, filter_workers)
@@ -115,17 +115,16 @@ class LogStash::Runner < Clamp::Command
     if config_test?
       puts "Configuration OK"
     else
-      puts "running task"
-      task = Stud::Task.new { puts "executing!" ; @agent.execute }
+      task = Stud::Task.new { @agent.execute }
       return task.wait
     end
 
   rescue LoadError => e
     fail("Configuration problem.")
   rescue LogStash::ConfigurationError => e
-    @logger.error I18n.t("logstash.agent.error", :error => e)
+    @logger.error I18n.t("logstash.error", :error => e)
     if !config_test?
-      @logger.warn I18n.t("logstash.agent.configtest-flag-information")
+      @logger.warn I18n.t("logstash.runner.configtest-flag-information")
     end
     return 1
   rescue => e
@@ -179,7 +178,7 @@ class LogStash::Runner < Clamp::Command
   # @param paths [String, Array<String>] plugins path string or list of path strings to add
   def configure_plugin_paths(paths)
     Array(paths).each do |path|
-      fail(I18n.t("logstash.agent.configuration.plugin_path_missing", :path => path)) unless File.directory?(path)
+      fail(I18n.t("logstash.runner.configuration.plugin_path_missing", :path => path)) unless File.directory?(path)
       LogStash::Environment.add_plugin_path(path)
     end
   end
@@ -216,7 +215,7 @@ class LogStash::Runner < Clamp::Command
         @log_fd.close if @log_fd
         @log_fd = File.new(path, "a")
       rescue => e
-        fail(I18n.t("logstash.agent.configuration.log_file_failed",
+        fail(I18n.t("logstash.runner.configuration.log_file_failed",
                     :path => path, :error => e))
       end
 
@@ -263,7 +262,7 @@ class LogStash::Runner < Clamp::Command
       when "file" then
         local_config(uri.path)
       else
-        fail(I18n.t("logstash.agent.configuration.scheme-not-supported", :path => path))
+        fail(I18n.t("logstash.runner.configuration.scheme-not-supported", :path => path))
       end
     rescue URI::InvalidURIError
       # fallback for windows.
@@ -278,7 +277,7 @@ class LogStash::Runner < Clamp::Command
     path = File.join(path, "*") if File.directory?(path)
 
     if Dir.glob(path).length == 0
-      fail(I18n.t("logstash.agent.configuration.file-not-found", :path => path))
+      fail(I18n.t("logstash.runner.configuration.file-not-found", :path => path))
     end
 
     config = ""
@@ -306,7 +305,7 @@ class LogStash::Runner < Clamp::Command
     begin
       Net::HTTP.get(uri) + "\n"
     rescue Exception => e
-      fail(I18n.t("logstash.agent.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
+      fail(I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
     end
   end
 

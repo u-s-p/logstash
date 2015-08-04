@@ -7,6 +7,8 @@ en:
     The error reported is: 
       %{error}
   logstash:
+    error: >-
+      Error: %{error}
     environment:
       jruby-required:  >-
         JRuby is required
@@ -57,11 +59,6 @@ en:
     agent:
       sighup: >-
         SIGHUP received.
-      missing-configuration: >-
-        No configuration file was specified. Perhaps you forgot to provide
-        the '-f yourlogstash.conf' flag?
-      error: >-
-        Error: %{error}
       sigint: >-
         SIGINT received. Shutting down the pipeline.
       sigterm: >-
@@ -72,6 +69,10 @@ en:
         data loss.
       forced_sigint: >-
         SIGINT received. Terminating immediately..
+    runner:
+      missing-configuration: >-
+        No configuration file was specified. Perhaps you forgot to provide
+        the '-f yourlogstash.conf' flag?
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can
         use to validate logstash's configuration before you choose

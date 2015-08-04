@@ -12,44 +12,24 @@ describe LogStash::Runner do
 
   describe "argument parsing" do
 
+    subject { LogStash::Runner.new("") }
     context "when -e is given" do
 
-      subject { LogStash::Runner.new("") }
       let(:args) { ["-e", ""] }
 
-      it "should add an empty pipeline to the agent" do
-        expect(subject.agent).to receive(:add_pipeline).once
-        subject.run(args)
-      end
-
       it "should execute the agent" do
+        expect(subject.agent).to receive(:add_pipeline).once
         expect(subject.agent).to receive(:execute).once
         subject.run(args)
       end
     end
 
-    context "when -h is given" do
-      it "should run agent help" do
-        #expect(subject).to receive(:show_help).once #.and_return(nil)
-        args = ["-h"]
-        expect(subject.run("", args)).to eq(0)
-      end
-    end
-
     context "with no arguments" do
-      it "should show help with no arguments" do
-        expect($stderr).to receive(:puts).once.and_return("No command given")
-        expect($stderr).to receive(:puts).once
-        args = []
-        expect(subject.run("", args)).to eq(1)
+      let(:args) { [] }
+      it "should show help" do
+        expect(subject).to receive(:help).once
+        expect(subject.run(args)).to eq(1)
       end
-    end
-
-    it "should show help for unknown commands" do
-      #expect($stderr).to receive(:puts).once.and_return("No such command welp")
-      expect($stderr).to receive(:puts).once
-      args = ["welp"]
-      expect(subject.run("", args)).to eq(1)
     end
   end
 
