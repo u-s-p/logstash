@@ -14,6 +14,8 @@ require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
 
 class LogStash::Pipeline
+  DEFAULT_SIZEDQUEUE_SIZE = 20
+
   attr_reader :inputs, :filters, :outputs, :input_to_filter, :filter_to_output
 
   def initialize(configstr)
@@ -41,9 +43,9 @@ class LogStash::Pipeline
       raise
     end
 
-    @input_to_filter = SizedQueue.new(20)
+    @input_to_filter = SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE)
     # if no filters, pipe inputs directly to outputs
-    @filter_to_output = filters? ? SizedQueue.new(20) : @input_to_filter
+    @filter_to_output = filters? ? SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE) : @input_to_filter
 
     @settings = {
       "filter-workers" => LogStash::Config::CpuCoreStrategy.fifty_percent
