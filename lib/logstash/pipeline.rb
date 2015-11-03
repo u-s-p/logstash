@@ -43,9 +43,9 @@ class LogStash::Pipeline
       raise
     end
 
-    @input_to_filter = SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE)
+    @input_to_filter = create_sizedqueue(:input_to_filter)
     # if no filters, pipe inputs directly to outputs
-    @filter_to_output = filters? ? SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE) : @input_to_filter
+    @filter_to_output = filters? ? create_sizedqueue(:filter_to_output) : @input_to_filter
 
     @settings = {
       "filter-workers" => LogStash::Config::CpuCoreStrategy.fifty_percent
@@ -55,6 +55,10 @@ class LogStash::Pipeline
     @ready = Concurrent::AtomicBoolean.new(false)
     @input_threads = []
   end # def initialize
+
+  def create_sizedqueue(name)
+    SizedQueue.new(DEFAULT_SIZEDQUEUE_SIZE)
+  end
 
   def ready?
     @ready.value
