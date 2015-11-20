@@ -52,7 +52,16 @@ namespace "plugin" do
 
   task "install-all" do
     puts("[plugin:install-all] Installing all plugins from https://github.com/logstash-plugins")
-    install_plugins("--no-verify", *LogStash::RakeLib.fetch_all_plugins)
+    p = *LogStash::RakeLib.fetch_all_plugins
+    
+    p.each do |plugin|
+      begin
+        install_plugins("--no-verify", plugin)
+      rescue
+        puts "Unable to install #{plugin}. Skipping"
+        next
+      end
+    end  
 
     task.reenable # Allow this task to be run again
   end

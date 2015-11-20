@@ -70,7 +70,7 @@ namespace "artifact" do
   task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "clean-bundle-config"]
 
   desc "Build a tar.gz of logstash with all dependencies"
-  task "tar" => ["prepare"] do
+  task "tar" do
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
