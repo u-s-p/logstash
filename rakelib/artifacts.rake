@@ -116,11 +116,21 @@ namespace "artifact" do
     tar.close
     gz.close
     puts "Complete: #{tarpath}"
-  end  
+  end
 
   task "zip" => ["prepare"] do
+    puts("[artifact:zip] Building zip of default plugins")
+    build_zip
+  end
+
+  task "zip-all-plugins" => ["prepare-all"] do
+    puts("[artifact:zip] Building zip of all plugins")
+    build_zip "all-plugins"
+  end
+
+  def build_zip(zip_suffix = "")
     require 'zip'
-    zippath = "build/logstash-#{LOGSTASH_VERSION}.zip"
+    zippath = "build/logstash-#{zip_suffix}-#{LOGSTASH_VERSION}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
