@@ -68,13 +68,25 @@ namespace "artifact" do
   end
 
   task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "clean-bundle-config"]
+  task "prepare-all" => ["bootstrap", "plugin:install-all", "install-logstash-core", "clean-bundle-config"]
 
-  desc "Build a tar.gz of logstash with all dependencies"
-  task "tar" do
+  desc "Build a tar.gz of core logstash plugins with all dependencies"
+  task "tar" => ["prepare"] do
+    puts("[artifact:tar] Building tar.gz of default plugins")
+    build_tar
+  end
+
+  desc "Build a tar.gz of all logstash plugins"
+  task "tar-all-plugins" => ["prepare-all"] do
+    puts("[artifact:tar] Building tar.gz of all plugins")
+    build_tar "all-plugins"
+  end
+
+  def build_tar(tar_suffix = "")
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
-    tarpath = "build/logstash-#{LOGSTASH_VERSION}.tar.gz"
+    tarpath = "build/logstash-#{tar_suffix}-#{LOGSTASH_VERSION}.tar.gz"
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
@@ -104,7 +116,7 @@ namespace "artifact" do
     tar.close
     gz.close
     puts "Complete: #{tarpath}"
-  end
+  end  
 
   task "zip" => ["prepare"] do
     require 'zip'
